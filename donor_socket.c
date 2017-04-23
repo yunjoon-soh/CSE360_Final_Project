@@ -34,7 +34,9 @@ int main(int argc, char *argv[])
         connfd = accept(listenfd, (struct sockaddr*)NULL, NULL); 
 
         ticks = time(NULL);
-        snprintf(sendBuff, sizeof(sendBuff), "%.24s\r\n", ctime(&ticks));
+        /* TODO: How to send syscall in string format?*/
+        /* You can send it, then parse it out on client side.*/
+        snprintf(sendBuff, sizeof(sendBuff), "%.50s\r\n", "any type of info you want to send in string format");
         write(connfd, sendBuff, strlen(sendBuff)); 
         printf("Snoopy Detected: %s", sendBuff);
 
