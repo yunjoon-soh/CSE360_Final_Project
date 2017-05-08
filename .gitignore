@@ -35,3 +35,7 @@
 # executables
 gridS
 gridD
+app
+seccomp
+donor
+snoopy

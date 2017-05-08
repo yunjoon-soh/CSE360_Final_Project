@@ -16,3 +16,19 @@ long int Strtol(const char *nptr, char **endptr, int base){
 	return val;
 }
 
+char *Strncpy(char *dest, const char *src, size_t n){
+	dest = strncpy(dest, src, n);
+	return dest;
+}
+
+pid_t Fork(void){
+	pid_t toRet = fork();
+
+	return toRet;
+}
+
+pid_t Waitpid(pid_t pid, int *status, int options){
+	pid_t toRet = waitpid(pid, status, options);
+	return toRet;
+}
+
