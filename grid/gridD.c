@@ -10,7 +10,9 @@ int main(int argc, char** argv){
 	char** exeArgs = NULL;
 
 	// unset the environment variable
-	DEBUG(0, "%s\n", "Unloading previous LD_PRELOAD") // Note. no ; intended
+	DEBUG(0, "%s\n", "Unloading previous LD_PRELOAD") 
+	// Note. no ; and this is intended
+	// check gridD.h for declaration and detail
 
 	unsetenv("LD_PRELOAD");
 
@@ -20,7 +22,8 @@ int main(int argc, char** argv){
 			opt_i=1;
 			break;
 		case 'k':
-			opt_k=1; break;
+			opt_k=1; 
+			break;
 		case 'm':
 			// convert next option argument to long
 			val = Strtol(optarg, &end_ptr, base);
@@ -54,6 +57,7 @@ int main(int argc, char** argv){
 
 	fprintf(stdout, "Validating parameters...\n");
 
+	// check if opt_p was used
 	if(opt_p != 1){
 		fprintf(stderr, "Option p must be given! Abort execution.\n");
 		exit(EXIT_FAILURE);
@@ -71,10 +75,12 @@ int main(int argc, char** argv){
 2. Run it inside seccomp
 
 3. Intercept
-Whenever Snoopy's program makes a libcall, if it is our interest, intercept it and send to gridServer
-Whenever Snoopy's program makes a system call, intercept it and send to gridServer
+Whenever Snoopy's program makes a libcall, if it is our interest, intercept it and send to helper thread
+Whenever Snoopy's program makes a system call, intercept it and send to helper thread
 
-4. Wait for the server's response and execute according to the server's response inside the interceptor
+Helper thread will then either perform correct actions or communicate with the server on behalf of the Snoopy's program
+
+4. If necessayr, helperPid waits for the server's response and execute according to the server's response inside the interceptor
 */
 
 	if(opt_d >= 1){
@@ -85,7 +91,9 @@ Whenever Snoopy's program makes a system call, intercept it and send to gridServ
 
 	setenv("LD_PRELOAD", HOOK_LIB_PATH, 1);
 
-	int childPid=-1, status;
+	int childPid=-1, status, helperPid=-1, hStatus;
+
+	/*Snoopy Program*/
 	if( (childPid = Fork()) == 0){
 		DEBUG(1, "%s\n", "Child process starting...\n");
 
@@ -98,10 +106,24 @@ Whenever Snoopy's program makes a system call, intercept it and send to gridServ
 		execv(exePath, exeArgs);
 	}
 
+	/*Helper Thread*/
+	if( (helperPid = Fork()) == 0){
+		DEBUG(1, "%s\n", "Helper process starting...\n");
+
+		// This is helper thread.
+		// What is does:
+		// 1. Communicates with the Snoopy's program
+		// 2. Communicates with the gridServer
+		// So this needs two bidirectional connections
+	}
+
 	// wait for all child processes
-	Waitpid(-1, &status, 0);
+	Waitpid(childPid, &status, 0);
+	Waitpid(helperPid, &hStatus, 0);
 
 	DEBUG(1, "Child process(pid=%d) ended with status=%d\n", childPid, status);
+	DEBUG(1, "Helper process(pid=%d) ended with status=%d\n", helperPid, hStatus);
+
 	
 	exit(EXIT_SUCCESS);	
 }

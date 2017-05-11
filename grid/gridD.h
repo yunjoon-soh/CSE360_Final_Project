@@ -8,8 +8,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-char* USAGE="Usage: Don't use it";
-char* SERVER_VERSION="I don't even know";
+char* USAGE="Usage: ./gridDonor -p [PROGRAM_PATH] [-d];
+char* SERVER_VERSION="Beta v0.1";
 
 #define HOOK_LIB_PATH "/home/sekar/CSE360_Final_Project/libcall_intercept/lib.so"
 

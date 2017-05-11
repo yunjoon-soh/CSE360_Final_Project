@@ -1,0 +1,48 @@
+1. I have setup the basic structure of the grid program.
+	GridD: grid donor, i.e., the client
+		Internally will spawn "helper" thread and "Snoopy program" thread
+	GridS: grid server, i.e., the server that will be checking the syscall requests
+
+2. These are modules that we have to implement
+
+===== Will be used by Both
+-----
+int sendTo(struct socket(?) or int fd(?), char* request);
+
+struct socket(?) or int fd(?): destination of sendTo
+char* request: encoded request to the server containing syscall information
+
+return value : 0 on success, non-zero on failure
+-----
+int receiveFrom(int fd, char** buf);
+
+int fd : file or socekt to receive from
+char** buf   : address to proper buffer
+
+return value : 0 on success, non-zero on failure
+               upon success buf will be filled with encoded response from the server, NULL on failure
+-----
+
+==== Will be used by Donor
+void interpreteResponse(char* response);
+
+char* response: response of the server
+
+returns nothing but based on the response take appropriate action such as executing syscall or disallowing it.
+
+===== Will be used by Server
+-----
+int interpreteRequest(char* request, char** buf);
+
+char* request: request by the donor and server's interpretation of the request is in buf
+return value: 0 on success, non-zero on failure
+-----
+
+
+===== Library Hooking
+We will just demo some of it.
+
+==== System call hooking
+open: request file to server, receive from the file
+close: remove the file received from the server
+

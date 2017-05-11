@@ -32,6 +32,18 @@ int main(int argc, char** argv){
 		fprintf(stderr, "Option a: %d, Option n: %d %ld, Option d: %d\n", opt_a, opt_n, max_connection, opt_d);
 			
 	fprintf(stdout, "Starting Grid Server... Version: %s (Build: %d)\n", SERVER_VERSION, BUILDS);
+
+	// open socket
+
+	while(1){
+		// listen for connection
+
+		// upon receive of packets, parse it
+
+		// case1: if donor requests for getting input
+		// case2: if donor sends result
+		// case3: 
+	}
 	
 	exit(EXIT_SUCCESS);	
 }
