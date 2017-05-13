@@ -48,9 +48,26 @@ int main(int argc, char *argv[])
     while ( (n = read(sockfd, recvBuff, sizeof(recvBuff)-1)) > 0)
     {
         recvBuff[n] = 0;
-        if(fputs(recvBuff, stdout) == EOF)
-        {
-            printf("\n Error : Fputs error\n");
+        printf("Input: %s\n", recvBuff);
+        //parse it into eax, and such
+
+        char input[4][40];        
+        char *ch;
+        int i = 0;
+        ch = strtok(recvBuff, ",");
+        while (ch != NULL) {
+            strcpy(input[i], ch);
+            ch = strtok(NULL, " ,");
+            i++;
+        }
+
+        //
+        // After this, do what you'd like with the input from donor
+        //
+
+        int j;
+        for(j = 0; j < 4 ; j++){
+            printf("%s\n", input[j]);
         }
     } 
 
@@ -60,4 +77,4 @@ int main(int argc, char *argv[])
     } 
 
     return 0;
-}
+} 

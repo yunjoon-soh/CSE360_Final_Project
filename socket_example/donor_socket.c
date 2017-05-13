@@ -33,9 +33,7 @@ void connection(char* sentMessage){
         connfd = accept(listenfd, (struct sockaddr*)NULL, NULL); 
 
         ticks = time(NULL);
-        /* TODO: How to send syscall in string format?*/
-        /* You can send it, then parse it out on client side.*/
-        snprintf(sendBuff, sizeof(sendBuff), "%.50s\r\n", sentMessage);
+        snprintf(sendBuff, sizeof(sendBuff), "%.90s\r\n", sentMessage);
         write(connfd, sendBuff, strlen(sendBuff)); 
         printf("Snoopy Detected: %s", sendBuff);
 
@@ -46,5 +44,8 @@ void connection(char* sentMessage){
 
 int main(int argc, char *argv[])
 {
-    connection("Hi, Snoopy.");
+    //construct protocol into a string
+    char* protocol = "eax:valuevlaue, ebx:asdjasdjasd, ecx:sadafw, edx:asdfsasd";
+
+    connection(protocol);
 }
