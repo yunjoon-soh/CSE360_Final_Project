@@ -1,5 +1,6 @@
 CC=gcc
-CFLAGS=-Wall -Werror -Wextra -g
+#CFLAGS=-Wall -Werror -Wextra -g
+CFLAGS=-Wall -Wextra -g
 LDFLAGS=
 RM=rm -f
 
@@ -15,7 +16,7 @@ BIN2=gridD
 # force run ignoring the change of dependent file
 .PHONY=buildNum
 
-all: buildNum $(BIN) $(BIN2)
+all: buildNum $(BIN) $(BIN2) writeSample
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $<
@@ -28,6 +29,9 @@ gridS: gridS.o wrappers.o $(HDRS)
 
 gridD: gridD.o wrappers.o $(HDRS2)
 	$(CC) $(LDFLAGS) $^ -o $(BIN2)
+
+writeSample: writeSample.o
+	$(CC) $(LDFLAGS) $^ -o $@.out
 
 clean: 
 	$(RM) $(BIN) $(BIN2)
