@@ -9,8 +9,7 @@
 #include <sys/types.h>
 #include <time.h> 
 
-int main(int argc, char *argv[])
-{
+void connection(char* sentMessage){
     int listenfd = 0, connfd = 0;
     struct sockaddr_in serv_addr; 
 
@@ -36,11 +35,16 @@ int main(int argc, char *argv[])
         ticks = time(NULL);
         /* TODO: How to send syscall in string format?*/
         /* You can send it, then parse it out on client side.*/
-        snprintf(sendBuff, sizeof(sendBuff), "%.50s\r\n", "any type of info you want to send in string format");
+        snprintf(sendBuff, sizeof(sendBuff), "%.50s\r\n", sentMessage);
         write(connfd, sendBuff, strlen(sendBuff)); 
         printf("Snoopy Detected: %s", sendBuff);
 
         close(connfd);
         sleep(1);
      }
+}
+
+int main(int argc, char *argv[])
+{
+    connection("Hi, Snoopy.");
 }
