@@ -7,7 +7,6 @@ int puts(const char *message)
 
 	// save original puts
 	old_puts = dlsym(RTLD_NEXT, "puts");
-	printf("Hooked!");
 
 	// If the message is Hello world!
 	if (strcmp(message, "Hello world!\n") == 0)
@@ -30,9 +29,10 @@ FILE *fopen(const char *path, const char *mode) {
 	// save original fopen
 	old_fopen = dlsym(RTLD_NEXT, "fopen");
 
-	char *sendMessage[1024];
-	int pathLen = sizeof(path) / sizeof(char);
-	int modeLen = sizeof(mode) / sizeof(char);
+	char sendMessage[1024];
+	memset(sendMessage, 0, sizeof(sendMessage));
+	int pathLen = strlen(path);
+	// int modeLen = strlen(mode);
 	int index = 0;
 
 	// create message to send
@@ -40,17 +40,17 @@ FILE *fopen(const char *path, const char *mode) {
 	index += 6;
 	strncpy(&sendMessage[index], path, pathLen);
 	index += pathLen;
-	strncpy(&sendMessage[index], mode, modeLen);
+	// printf("path: %s, pathLen:%d, mode: %s, modeLen:%d index:%d\n", path,pathLen, mode, modeLen, index);
 	sendMessage[index] = '\0';
 
-	printf("Sending the current message: %s\n", sendMessage);
+	printf("[lib.so]Sending the current message: %s\n", sendMessage);
 	fopenConnection(sendMessage, "127.0.0.1");
 
 	return NULL;
 }
 
 int fclose(FILE *stream) {
-	printf("Hooked fclose");
+	printf("Hooked fclose\n");
 	int (*old_fclose)(FILE * stream);
 
 	// save original fclose

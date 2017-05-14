@@ -9,7 +9,7 @@ run: all
 app: hello.o
 	gcc $^ -o $@
 
-lib: libex.c ../grid/net.o
+lib: libex.c ../grid/bin/net.o
 	gcc $^ -o $@.so -fPIC -shared -ldl -D_GNU_SOURCE -I../grid/header
 
 %.o: %.c
