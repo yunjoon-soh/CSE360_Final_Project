@@ -80,6 +80,7 @@ int main(int argc, char *argv[])
         char buffer[20][100];
         
         //read the file
+        printf("Snoopy: About to open the file %s\n", filename);
         fp = fopen(filename,"r");
         while ((read = getline(&line, &leng, fp)) != -1) {
             strcpy(buffer[counter], line);
@@ -87,25 +88,24 @@ int main(int argc, char *argv[])
             counter++;
         }
 
+        printf("Snoopy: About to close the file %s\n", filename);
         fclose(fp);
 
+        printf("Snoopy: About to print out the file %s\n", filename);
         int j;
         for(j = 0; j < counter ; j++){
             printf("Read from file: %s\n", buffer[j]);
         }
 
-
         //
         // Then return it back to the server
         //
 
+        printf("Snoopy: About to fill sendBuff and send %s\n", filename);
         // fill sendbuff with info
         strcpy(sendBuff, buffer[0]);
         printf("Sending: %s\n", sendBuff);
-        write(sockfd, sendBuff, sizeof(sendBuff)-1);
-
-
-        
+        write(sockfd, sendBuff, sizeof(sendBuff)-1); 
     }
 
     return 0;

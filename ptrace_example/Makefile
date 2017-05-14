@@ -1,7 +1,7 @@
 all: test hello.out
 
 test: ptrace_test.o
-	$(CC) $(CFLAGS) $^ -o $@
+	$(CC) $(CFLAGS) $^ -o $@.out
 
 hello.out: hello.o
 	$(CC) $(CFLAGS) $^ -o $@

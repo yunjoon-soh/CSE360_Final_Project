@@ -29,6 +29,7 @@ static int install_syscall_filter(void)
 		ALLOW_SYSCALL(exit),
 		ALLOW_SYSCALL(read),
 		ALLOW_SYSCALL(write),
+		//ALLOW_SYSCALL(open),
 		KILL_PROCESS,
 	};
 	struct sock_fprog prog = {
@@ -60,7 +61,19 @@ int main(int argc, char *argv[])
 	if(install_syscall_filter()) 
 		return 1;
 
+	
+	int f = open("seccomp-bpf.h", 'r');
+	int f2 = open("tmp.h", 'w');
 
+	char buf2[1024];
+	if(f >= 0){
+		read(f, buf2, 10);
+		write(f2,   buf2, 10);
+	}
+
+	
+
+/*
 	printf("Type stuff here: ");
 	fflush(NULL);
 	buf[0] = '\0';
@@ -72,7 +85,7 @@ int main(int argc, char *argv[])
 	sleep(1);
 
 	fork();
-	printf("You should not see this because I'm dead.\n");
-
+	//printf("You should not see this because I'm dead.\n");
+*/
 	return 0;
 }

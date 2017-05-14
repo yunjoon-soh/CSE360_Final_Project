@@ -1,15 +1,16 @@
 CC=gcc
-CFLAGS=-Wall -Werror
-run: all
-	./app
+CFLAGS=-Wall -Werror -I../grid/header
 
 all: lib app
+
+run: all
+	./app
 
 app: hello.o
 	gcc $^ -o $@
 
-lib: libex.c
-	gcc $^ -o $@.so -fPIC -shared -ldl -D_GNU_SOURCE
+lib: libex.c ../grid/net.o
+	gcc $^ -o $@.so -fPIC -shared -ldl -D_GNU_SOURCE -I../grid/header
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $<
@@ -19,3 +20,4 @@ lib: libex.c
 
 clean:
 	rm -rf app *.o *.so
+
