@@ -105,12 +105,12 @@ int main(int argc, char** argv) {
 			perror("setenv");
 
 		// install seccomp filter
-		// if (install_syscall_filter()){
-		// 	DEBUG(1, "%s\n", "install_syscall_filter failed, aborting");
-		// 	exit(EXIT_FAILURE);
-		// } else{
-		// 	DEBUG(1, "%s\n", "install_syscall_filter success");
-		// }
+		 if (install_syscall_filter()){
+		 	DEBUG(1, "%s\n", "install_syscall_filter failed, aborting");
+		 	exit(EXIT_FAILURE);
+		 } else{
+		 	DEBUG(1, "%s\n", "install_syscall_filter success");
+		 }
 
 		// When input data is passed on to execv()
 		// Trace for syscalls
@@ -181,16 +181,19 @@ static int install_syscall_filter(void) {
 		/* Grab the system call number. */
 		EXAMINE_SYSCALL,
 		/* List allowed syscalls. */
-		ALLOW_SYSCALL(rt_sigreturn),
-#ifdef __NR_sigreturn
-		ALLOW_SYSCALL(sigreturn),
-#endif
-		ALLOW_SYSCALL(exit_group),
-		ALLOW_SYSCALL(exit),
-		ALLOW_SYSCALL(read),
-		ALLOW_SYSCALL(write),
+		//ALLOW_SYSCALL(rt_sigreturn),
+//#ifdef __NR_sigreturn
+		//ALLOW_SYSCALL(sigreturn),
+//#endif
+		//ALLOW_SYSCALL(exit_group),
+		//ALLOW_SYSCALL(exit),
+		//ALLOW_SYSCALL(read),
+		//ALLOW_SYSCALL(write),
 		//ALLOW_SYSCALL(open),
-		KILL_PROCESS,
+		//KILL_PROCESS, @ Daniel I think this was a major problem.  It was killing any process who used a syscall that wasn't declared allowed.  Now it is done where it allows everything UNLESS Blacklisted.
+		// use BLACKLIST(name_of_syscall) to blacklist a syscall
+		BLACKLIST(exit),
+		RETURN_ALLOW,
 	};
 	struct sock_fprog prog = {
 		.len = (unsigned short)(sizeof(filter) / sizeof(filter[0])),
