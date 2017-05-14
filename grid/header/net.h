@@ -11,5 +11,6 @@
 
 void connection(char* sentMessage);
 int fopenConnection(char* path, char* addr);
+void server();
 
 #endif

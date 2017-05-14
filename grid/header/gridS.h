@@ -3,6 +3,7 @@
 
 #include "builds.h"
 #include "wrappers.h"
+#include "net.h"
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -10,6 +11,9 @@
 
 char* USAGE="Usage: Don't use it";
 char* SERVER_VERSION="I don't even know";
+
+#define __DEBUG_OUTPUT__ stderr
+#define DEBUG(level, format, ...) if(opt_d >= level){ fprintf(__DEBUG_OUTPUT__, "[DEBUG%2d]", level); fprintf(__DEBUG_OUTPUT__, format, ## __VA_ARGS__); }
 
 #endif
 

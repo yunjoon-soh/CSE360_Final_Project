@@ -18,8 +18,10 @@ HDRS2=$(HDR)/builds.h $(HDR)/gridD.h
 # force run ignoring the change of dependent file
 .PHONY=buildNum
 
-all: buildNum gridS gridD writeSample openSample rwSample fopenSample setuidSample
+all: folder buildNum gridS gridD writeSample openSample rwSample fopenSample setuidSample
 
+folder: 
+	mkdir -p $(BIN)
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $(BIN)/$@
 
@@ -29,7 +31,7 @@ all: buildNum gridS gridD writeSample openSample rwSample fopenSample setuidSamp
 buildNum:
 	$(SCRIPT)/buildN.sh
 
-gridS: gridS.o wrappers.o $(HDRS)
+gridS: gridS.o net.o wrappers.o $(HDRS)
 	$(CC) $(CFLAGS) $(LDFLAGS) $(patsubst %.o,$(BIN)/%.o, $^) -o $@
 
 gridD: gridD.o net.o wrappers.o $(HDRS2)
