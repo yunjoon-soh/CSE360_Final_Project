@@ -16,7 +16,7 @@ BIN2=gridD
 # force run ignoring the change of dependent file
 .PHONY=buildNum
 
-all: buildNum $(BIN) $(BIN2) writeSample
+all: buildNum $(BIN) $(BIN2) writeSample openSample rwSample fopenSample
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $<
@@ -30,7 +30,7 @@ gridS: gridS.o wrappers.o $(HDRS)
 gridD: gridD.o wrappers.o $(HDRS2)
 	$(CC) $(LDFLAGS) $^ -o $(BIN2)
 
-writeSample: writeSample.o
+%Sample: %Sample.o
 	$(CC) $(LDFLAGS) $^ -o $@.out
 
 clean: 
