@@ -5,7 +5,7 @@ void connection(char* sentMessage) {
     struct sockaddr_in serv_addr;
 
     char sendBuff[1025];
-    time_t ticks;
+    // time_t ticks;
 
     listenfd = socket(AF_INET, SOCK_STREAM, 0);
     memset(&serv_addr, '0', sizeof(serv_addr));
@@ -23,7 +23,7 @@ void connection(char* sentMessage) {
     {
         connfd = accept(listenfd, (struct sockaddr*)NULL, NULL);
 
-        ticks = time(NULL);
+        // ticks = time(NULL);
         snprintf(sendBuff, sizeof(sendBuff), "%.90s\r\n", sentMessage);
         write(connfd, sendBuff, strlen(sendBuff));
         printf("Snoopy Detected: %s", sendBuff);
@@ -36,10 +36,9 @@ void connection(char* sentMessage) {
     }
 }
 
-void fopenConnection(char* path, char* addr) {
+int fopenConnection(char* path, char* addr) {
     int sockfd = 0, n = 0;
     char recvBuff[1024];
-    char sendBuff[1024];
     struct sockaddr_in serv_addr;
 
     memset(recvBuff, '0', sizeof(recvBuff));
@@ -76,4 +75,6 @@ void fopenConnection(char* path, char* addr) {
         close(sockfd);
         sleep(1);
     }
+
+    return 0;
 }

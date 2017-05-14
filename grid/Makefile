@@ -1,41 +1,42 @@
+HDR=./header
+BIN=./bin
+SRC=./src
+SCRIPT=./script
+
+VPATH=/home/sekar/CSE360_Final_Project/grid/src
+
 CC=gcc
 #CFLAGS=-Wall -Werror -Wextra -g
-CFLAGS=-Wall -Wextra -g -I./header
+CFLAGS=-Wall -Wextra -g -I$(HDR)
 LDFLAGS=
 RM=rm -f
 
 # Application specific
-SRC=gridS.c
-HDRS=builds.h ./header/gridS.h
-BIN=gridS
-
-SRC2=gridD.c
-HDRS2=builds.h ./header/gridD.h
-BIN2=gridD
+HDRS=$(HDR)/builds.h $(HDR)/gridS.h
+HDRS2=$(HDR)/builds.h $(HDR)/gridD.h
 
 # force run ignoring the change of dependent file
 .PHONY=buildNum
 
-all: buildNum $(BIN) $(BIN2) writeSample openSample rwSample fopenSample
+all: buildNum gridS gridD writeSample openSample rwSample fopenSample setuidSample
 
-%.o: %.c %.h
-	$(CC) $(CFLAGS) -c $<
-
-buildNum: *.c
-	./buildN.sh
-
-gridS: gridS.o wrappers.o $(HDRS)
-	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $(BIN)
-
-gridD: gridD.o net.o wrappers.o $(HDRS2)
-	$(CC) $(CFLAGS) $(LDFLAGS) $^ -o $(BIN2)
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $(BIN)/$@
 
 %Sample: %Sample.o
-	$(CC) $(LDFLAGS) $^ -o $@.out
+	$(CC) $(LDFLAGS) $(patsubst %.o,$(BIN)/%.o, $^) -o $@.out
+
+buildNum:
+	$(SCRIPT)/buildN.sh
+
+gridS: gridS.o wrappers.o $(HDRS)
+	$(CC) $(CFLAGS) $(LDFLAGS) $(patsubst %.o,$(BIN)/%.o, $^) -o $@
+
+gridD: gridD.o net.o wrappers.o $(HDRS2)
+	$(CC) $(CFLAGS) $(LDFLAGS) $(patsubst %.o,$(BIN)/%.o, $^) -o $@
 
 clean: 
-	$(RM) $(BIN) $(BIN2)
 	$(RM) -r ./*.out.dSYM
 	$(RM) core
-	$(RM) ./*.o
-	$(RM) ./*.out
+	$(RM) -r $(BIN)
+	$(RM) gridS gridD *.out

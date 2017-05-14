@@ -92,9 +92,9 @@ int main(int argc, char** argv) {
 		fprintf(stderr, "LD_PRELOAD=%s\n", ldPath);
 	}
 
-	setenv("LD_PRELOAD", HOOK_LIB_PATH, 1);
+	// setenv("LD_PRELOAD", HOOK_LIB_PATH, 1);
 
-	int childPid = -1, status = -1, helperPid = -1, hStatus;
+	int childPid = -1, status = -1;
 
 	/*Snoopy Program*/
 	if ( (childPid = Fork()) == 0) {
@@ -165,10 +165,8 @@ int main(int argc, char** argv) {
 
 	// wait for all child processes
 	Waitpid(childPid, &status, 0);
-	Waitpid(helperPid, &hStatus, 0);
 
 	DEBUG(1, "Child process(pid=%d) ended with status=%d\n", childPid, status);
-	DEBUG(1, "Helper process(pid=%d) ended with status=%d\n", helperPid, hStatus);
 
 
 	exit(EXIT_SUCCESS);

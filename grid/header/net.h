@@ -10,6 +10,6 @@
 #include <time.h>
 
 void connection(char* sentMessage);
-void fopenConnection(char* path, char* addr);
+int fopenConnection(char* path, char* addr);
 
 #endif
