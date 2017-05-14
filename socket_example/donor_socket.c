@@ -37,6 +37,9 @@ void connection(char* sentMessage){
         write(connfd, sendBuff, strlen(sendBuff)); 
         printf("Snoopy Detected: %s", sendBuff);
 
+        read(connfd, sendBuff, strlen(sendBuff));
+        printf("%s\n", sendBuff);
+
         close(connfd);
         sleep(1);
      }

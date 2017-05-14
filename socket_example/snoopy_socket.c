@@ -13,6 +13,7 @@ int main(int argc, char *argv[])
 {
     int sockfd = 0, n = 0;
     char recvBuff[1024];
+    char sendBuff[1024];
     struct sockaddr_in serv_addr; 
 
     if(argc != 2)
@@ -63,18 +64,20 @@ int main(int argc, char *argv[])
 
         //
         // After this, do what you'd like with the input from donor
+        // Then return it back to the server
         //
+
+        // fill sendbuff with info
+        strcpy(sendBuff, "Snoopy has returned a value.");
+        printf("Sending: %s\n", sendBuff);
+        write(sockfd, sendBuff, sizeof(sendBuff)-1);
+
 
         int j;
         for(j = 0; j < 4 ; j++){
             printf("%s\n", input[j]);
         }
-    } 
-
-    if(n < 0)
-    {
-        printf("\n Read error \n");
-    } 
+    }
 
     return 0;
 } 
