@@ -52,31 +52,60 @@ int main(int argc, char *argv[])
         printf("Input: %s\n", recvBuff);
         //parse it into eax, and such
 
-        char input[4][40];        
-        char *ch;
-        int i = 0;
-        ch = strtok(recvBuff, ",");
-        while (ch != NULL) {
-            strcpy(input[i], ch);
-            ch = strtok(NULL, " ,");
-            i++;
-        }
+        //char input[4][40];        
+        //char *ch;
+        //int i = 0;
+        //ch = strtok(recvBuff, ",");
+        //while (ch != NULL) {
+        //    strcpy(input[i], ch);
+        //    ch = strtok(NULL, " ,");
+        //    i++;
+        //}
 
         //
         // After this, do what you'd like with the input from donor
+        //
+
+        //trim the /r/n off of the filename
+        int len = strcspn(recvBuff, "\r");
+        char* filename = malloc(200);
+        strncpy(filename, recvBuff, len);
+
+        FILE *fp;
+        char * line = NULL;
+        size_t leng = 0;
+        ssize_t read;
+        int counter = 0;
+
+        char buffer[20][100];
+        
+        //read the file
+        fp = fopen(filename,"r");
+        while ((read = getline(&line, &leng, fp)) != -1) {
+            strcpy(buffer[counter], line);
+            printf("%s", line);
+            counter++;
+        }
+
+        fclose(fp);
+
+        int j;
+        for(j = 0; j < counter ; j++){
+            printf("Read from file: %s\n", buffer[j]);
+        }
+
+
+        //
         // Then return it back to the server
         //
 
         // fill sendbuff with info
-        strcpy(sendBuff, "Snoopy has returned a value.");
+        strcpy(sendBuff, buffer[0]);
         printf("Sending: %s\n", sendBuff);
         write(sockfd, sendBuff, sizeof(sendBuff)-1);
 
 
-        int j;
-        for(j = 0; j < 4 ; j++){
-            printf("%s\n", input[j]);
-        }
+        
     }
 
     return 0;

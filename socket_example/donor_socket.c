@@ -48,7 +48,8 @@ void connection(char* sentMessage){
 int main(int argc, char *argv[])
 {
     //construct protocol into a string
-    char* protocol = "eax:valuevlaue, ebx:asdjasdjasd, ecx:sadafw, edx:asdfsasd";
+    //open this file!
+    char* protocol = "text.txt";
 
     connection(protocol);
 }
