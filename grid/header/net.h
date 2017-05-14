@@ -13,4 +13,6 @@ void connection(char* sentMessage);
 int fopenConnection(char* path, char* addr);
 void server();
 
+#define INVALID_FILE_NAME "Invalid file name\n"
+#define INVALID_COMMAND "Invalid command\n"
 #endif
