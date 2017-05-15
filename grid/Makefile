@@ -28,8 +28,10 @@ folder:
 %Sample: %Sample.o
 	$(CC) $(LDFLAGS) $(patsubst %.o,$(BIN)/%.o, $^) -o $@.out
 
-lib: libex.o net.o
-	gcc $(CFLAGS) $(LDFLAGS2) $(patsubst %.o,$(BIN)/%.o, $^) -o $@.so 
+#lib: libex.o net.o
+#	gcc $(CFLAGS) $(LDFLAGS2) $(patsubst %.o,$(BIN)/%.o, $^) -o $@.so 
+lib: ../libcall_intercept/lib.so
+	cp $< ./
 
 buildNum:
 	$(SCRIPT)/buildN.sh
