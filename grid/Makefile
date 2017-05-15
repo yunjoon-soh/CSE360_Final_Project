@@ -8,7 +8,7 @@ VPATH=/home/sekar/CSE360_Final_Project/grid/src
 CC=gcc
 #CFLAGS=-Wall -Werror -Wextra -g
 CFLAGS=-Wall -Wextra -g -I$(HDR)
-LDFLAGS=
+LDFLAGS2=-fPIC -shared -ldl 
 RM=rm -f
 
 # Application specific
@@ -18,7 +18,7 @@ HDRS2=$(HDR)/builds.h $(HDR)/gridD.h
 # force run ignoring the change of dependent file
 .PHONY=buildNum
 
-all: folder buildNum gridS gridD writeSample openSample rwSample fopenSample setuidSample
+all: folder lib buildNum gridS gridD writeSample openSample rwSample fopenSample setuidSample
 
 folder: 
 	mkdir -p $(BIN)
@@ -27,6 +27,9 @@ folder:
 
 %Sample: %Sample.o
 	$(CC) $(LDFLAGS) $(patsubst %.o,$(BIN)/%.o, $^) -o $@.out
+
+lib: libex.o net.o
+	gcc $(CFLAGS) $(LDFLAGS2) $(patsubst %.o,$(BIN)/%.o, $^) -o $@.so 
 
 buildNum:
 	$(SCRIPT)/buildN.sh
@@ -42,3 +45,4 @@ clean:
 	$(RM) core
 	$(RM) -r $(BIN)
 	$(RM) gridS gridD *.out
+	$(RM) *.so

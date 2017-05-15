@@ -8,8 +8,8 @@ void connection(char* sentMessage) {
 	// time_t ticks;
 
 	listenfd = socket(AF_INET, SOCK_STREAM, 0);
-	memset(&serv_addr, '0', sizeof(serv_addr));
-	memset(sendBuff, '0', sizeof(sendBuff));
+	memset(&serv_addr, 0, sizeof(serv_addr));
+	memset(sendBuff, 0, sizeof(sendBuff));
 
 	serv_addr.sin_family = AF_INET;
 	serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -121,7 +121,8 @@ void server() {
 		int i = 0;
 		while (ch != NULL && i < 4) {
 			strcpy(input[i], ch);
-			printf("[%d]%s\n", i, input[i++]);
+			printf("[%d]%s\n", i, input[i]);
+			i++;
 			ch = strtok (NULL, ",");
 		}
 
@@ -132,7 +133,7 @@ void server() {
 
 		if (strcmp(input[0], "fopen") == 0) {
 			//trim off \r\n
-			int len = strcspn(recvBuff, "\r");
+			// int len = strcspn(recvBuff, "\r");
 			char filename[200];
 			memset(filename, 0, 200);
 
