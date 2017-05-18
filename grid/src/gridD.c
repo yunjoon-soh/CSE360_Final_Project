@@ -136,22 +136,7 @@ int main(int argc, char** argv) {
 			orig_eax = ptrace(PTRACE_PEEKUSER, childPid, 4 * ORIG_EAX, NULL);
 			DEBUG(2, "Intercepted %ld\n", orig_eax);
 
-			if (orig_eax == SYS_read ) {
-				if (insyscall == 0) {
-					/* Syscall entry */
-					insyscall = 1;
-					params[0] = ptrace(PTRACE_PEEKUSER, childPid, 4 * EBX, NULL);
-					params[1] = ptrace(PTRACE_PEEKUSER, childPid, 4 * ECX, NULL);
-					params[2] = ptrace(PTRACE_PEEKUSER, childPid, 4 * EDX, NULL);
-					DEBUG(1, "Read called with %ld, %ld, %ld\n", params[0], params[1], params[2]);
-				}
-				else { /* Syscall exit */
-					eax = ptrace(PTRACE_PEEKUSER, childPid, 4 * EAX, NULL);
-					DEBUG(2, "Read returned with %ld\n", eax);
-					insyscall = 0;
-				}
-			}
-			else if (orig_eax == SYS_write ) {
+			if (orig_eax == SYS_write) {
 				if (insyscall == 0) {
 					/* Syscall entry */
 					insyscall = 1;
@@ -166,7 +151,22 @@ int main(int argc, char** argv) {
 					insyscall = 0;
 				}
 			}
-			else if (orig_eax == SYS_open ) {
+			else if (orig_eax == SYS_read) {
+				if (insyscall == 0) {
+					/* Syscall entry */
+					insyscall = 1;
+					params[0] = ptrace(PTRACE_PEEKUSER, childPid, 4 * EBX, NULL);
+					params[1] = ptrace(PTRACE_PEEKUSER, childPid, 4 * ECX, NULL);
+					params[2] = ptrace(PTRACE_PEEKUSER, childPid, 4 * EDX, NULL);
+					DEBUG(1, "Read called with %ld, %ld, %ld\n", params[0], params[1], params[2]);
+				}
+				else { /* Syscall exit */
+					eax = ptrace(PTRACE_PEEKUSER, childPid, 4 * EAX, NULL);
+					DEBUG(2, "Read returned with %ld\n", eax);
+					insyscall = 0;
+				}
+			}
+			else if (orig_eax == SYS_open) {
 				if (insyscall == 0) {
 					/* Syscall entry */
 					insyscall = 1;
@@ -181,7 +181,7 @@ int main(int argc, char** argv) {
 					insyscall = 0;
 				}
 			}
-			else if (orig_eax == SYS_close ) {
+			else if (orig_eax == SYS_read) {
 				if (insyscall == 0) {
 					/* Syscall entry */
 					insyscall = 1;
@@ -199,7 +199,7 @@ int main(int argc, char** argv) {
 			else {
 				DEBUG(1, "Child made syscall #%ld\n", orig_eax);
 			}
-			ptrace(PTRACE_SYSCALL, orig_eax == SYS_writechildPid, NULL, NULL);
+			ptrace(PTRACE_SYSCALL, childPid, NULL, NULL);
 
 			// 0. Intercept Syscall and libcalls
 			// 1. Communicates with the Snoopy's program
