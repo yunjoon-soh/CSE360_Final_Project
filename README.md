@@ -64,6 +64,12 @@ This README.md file is written for the purpose of explaining details of the proj
 * wrapper.c
 : Error handled library calls. Note. Not all libcalls are error handled because some developer of this project preferred inline error handling.
 
+### Script Folder
+* buildN.sh
+: Script to generate builds.h which includes the build number based on the number of git commits. Included as .PHONY in the Makefile
+
+
+
 --------------------------------------------------------------------------------------------------------
 # Grid
 ## Usage
@@ -117,12 +123,13 @@ Under current version, two different variants of gridD are implemented.
 
 
 * gridDPseudo
-: gridDPseudo includes **incomplete function** call that is involved with peeking the child process for parameters and modifying them before the syscall completion. This will be discussed in **Challenge** section.
+: gridDPseudo includes **incomplete function** call that is involved with peeking the child process for parameters and modifying them before the syscall completion. This will be discussed in Challenge section.
 
+## Challenge
 
+Because the grid platform is targeting arbitrary program and thus it is not guaranteed that user will have the source code, family of execv must be called. By the nature of execv, any seccomp-bpf filter applied to it will be ignored. Thus, monitoring every syscall of interest must be examined at the run time. This affects the performance and raise the difficulty to implement it. 
 
-
-
+Once syscall gets initialized it is impossible to halt, abort without terminating the tracee with the kill signal or through mechanisms implemented in ptrace. However, this should not be the case in our software because what we want is for subset of syscalls to act differently and not terminate. From the untrusted program's perspective, every syscall should execute as if it was not hooked. This includes the return value of syscalls after examination of its parameters. This is abstract at this level and it is explained in detail where I talk about the issue with actual implementation.
 
 
 

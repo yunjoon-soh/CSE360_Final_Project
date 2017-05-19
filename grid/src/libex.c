@@ -29,8 +29,8 @@ FILE *fopen(const char *path, const char *mode) {
 	// save original fopen
 	old_fopen = dlsym(RTLD_NEXT, "fopen");
 
-	char sendMessage[1024];
-	memset(sendMessage, 0, sizeof(sendMessage));
+	char sendMessage[PAGE_SIZE];
+	memset(sendMessage, 0, PAGE_SIZE);
 	int pathLen = strlen(path);
 	// int modeLen = strlen(mode);
 	int index = 0;
@@ -79,6 +79,17 @@ int fclose(FILE *stream) {
 
 	// save original fclose
 	old_fclose = dlsym(RTLD_NEXT, "fclose");
+
+	char sendMessage[PAGE_SIZE];
+	memset(sendMessage, 0, PAGE_SIZE);
+
+	// create message to send
+	// strncpy(&sendMessage[index], "fclose,", 7);
+	// index += 6;
+	// strcpy(&sendMessage[index], filennameFromFileStruct(stream));
+	
+	// printf("[lib.so] Sending the current message: %s\n", sendMessage);
+	// int res = fopenConnection(sendMessage, SNOOPY_ADDR, recvBuff);
 
 	if (stream != NULL) {
 		old_fclose(stream);
