@@ -1,49 +1,130 @@
 # CSE360_Final_Project
-Final project for CSE360 Spring 2017
+Final project for CSE360 Spring 2017.
 
-running donor and snoopy: 
-gcc donor_socket.c -o donor
-gcc snoopy_socket.c -o snoopy
+This README.md file is written for the purpose of explaining details of the project. High-level description/implementation details can be found in the final report.
 
+## File Structure
+### Main Program
+* *grid/*
+ * Makefile
+
+ * *include/*
+: Header files
+
+ * *src/*
+: Source files
+
+ * *script/*
+: Script files
+
+### Building Blocks
+* *libcall_intercept/*
+: library call intercept sample, it is required to "export LD_PRELOAD=`pwd`/lib.so" to hook
+ * Makefile
+ * libex.c
+ * libex.h
+ * hello.c
+
+
+* *ptrace_example/*
+: syscall intercept sample 
+ * 
+
+* *seccomp_example/*
+: seccomp usage code
+
+* *socket_example/*
+: socket communication related code
+
+## Grid Folder
+
+
+### Source files
+* \*Sample.c
+: All the sample PROGRAM used during development
+
+* gridD.c, gridS.c
+: Main entry source file
+
+* libex.c
+: Source code for lib.so, which is used to hook library calls
+
+* net.c
+: Socket/Network related functions, it is partially different from *socket_sample/*
+
+* gridDPseudo.c
+: Detailed implementation of gridD using pseudo code when related to advanced ptrace topics
+
+* helper.c
+: Minor helper functions for gridDPseudo.c
+
+* lookupTable.c
+: Simple array of key-value data structure, where key is internal, dummy file descriptor and value is memory address of file content. (See lookupTable section for detail).
+
+* wrapper.c
+: Error handled library calls. Note. Not all libcalls are error handled because some developer of this project preferred inline error handling.
+
+--------------------------------------------------------------------------------------------------------
 # Grid
-gridD.\*: Grid Donor program
-gridS.\*: Grid Server program
-wrappers: Wrapper of libraries with error handling
+## Usage
 
-# List of syscalls to allow or check or disallow
+* ./gridD -p [PROGRAM] [-d|-dd]
+* ./gridS [-d]
 
-## Allow
-It would be terriblly slow if we intercept every read and write
-* read
-* write
+--------------------------------------------------------------------------------------------------------
+# GridS Internal
 
-In multi-threaded program, interprocess communication may frequently happen, so we allow very basic ones
-...
+## Flow of GridS
+1. Parse input with getopt
+1. Infinite loop to wait for connection
+1. Upon connection read the request packet
+1. Parse the packet
+1. Execute request
+1. Write response packet
 
-Time related functionalities, sending over the network would not make sense
-...
+## Behaviors Handled (Check net.c::server() for detail)
+* fopen
+: Upon request for opening a file, action of gridS depends on whether it is a read open or write open. If both are set, return failure. If read open was requested, read the whole file, send the content of the file. If write open was requested, open the file and remember the FILE*. 
 
-Process controls, need to allow spawn child processes
+* fread
+: Ignore. Simulating read will be done on gridD. 
 
-## Must send to server
-Opening a file must be checked before execution
-* open
-* close
+* fwrite
+: Write to the open file. If there are multiple of them latest write-opened file will be used. In this case, previous FILE* will just be overwritten without being closed. This is a side-effect. 
+Future work: check if requested write-to-file is open based on an additional parameter: filename. Handle the side-effect.
+
+* fclose
+: Close the most recent write-open file. 
+
+## Challenge
+
+The reason why multiple write-open request is not handled properly is because there was no easy way to store the FILE* and filename pair. lookupTable.c::compare() is intended to handle this, but wasn't able to figure out within the given time. However, the pseudo code is inside net.c::server() comment. Note that there also should be a way to retrieve the filename and include that in the fwrite request to the server from the libex.c::fwrite. In other words, with just the parameters of fwrite, donor should have a way to find the filename. This may be trivial because I did not go through in detail. The reason that I didn't go through in detail was because even there is an easy solution to the problem it would be meaning less if it is not possible to compare the FILE*.
+
+--------------------------------------------------------------------------------------------------------
+# GridD Internal
+
+## Flow of GridD
+1. Parse input with getopt
+1. Fork a child process that would flag itself to be traced by ptrace.
+1. Parent process will be listening to the ptrace and intercept syscalls.
+1. Based on the syscall number take appropriate actions.
+
+## Two gridD
+Under current version, two different variants of gridD are implemented.
+
+* gridD
+: gridD does not have incomplete function. At the same time, all it can do with is log and view the sequence of syscalls made by the untrusted program. This can be later used for various software abnormally detection as discussed in the lecture.
+
+
+* gridDPseudo
+: gridDPseudo includes **incomplete function** call that is involved with peeking the child process for parameters and modifying them before the syscall completion. This will be discussed in **Challenge** section.
 
 
 
-------------------------------------------------------------------------
-* mmap
-* munmap
-* gettablesize
-* dup, dup2
 
-File and IO related control are also sensitive
-* fcntl
-* ioctl
 
-## Disallow
-User/Group Id related??
-Resource Controls?
-Virtual Memory related
+
+
+
+
 
