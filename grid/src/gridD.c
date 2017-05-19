@@ -2,6 +2,10 @@
 
 static int install_syscall_filter(void);
 static void runGrep(void);
+static void runCp(void);
+static void runStat(void);
+
+
 
 /*Grid Donor*/
 int main(int argc, char** argv) {
@@ -111,7 +115,9 @@ int main(int argc, char** argv) {
 
 		//Child process execl
 		//execv(exePath, exeArgs);
-		runGrep();
+		//runGrep();
+		//runCp();
+		runStat();
 	}
 	else {
 
@@ -213,8 +219,20 @@ int main(int argc, char** argv) {
 
 static void runGrep(void) {
 	char* argList[6] = {"/bin/grep", "--include=\\*.{c,h}", "-rnw", "-e", "void", NULL};
-	printf("Calling: %s %s %s %s %s\n", argList[0], argList[1], argList[2], argList[3], argList[4]);
+	printf("Calling: %s %s %s %s %s\n\n", argList[0], argList[1], argList[2], argList[3], argList[4]);
 	execv(argList[0], argList);
+}
+
+static void runCp(void) {
+	char* argList[4] = {"/bin/cp", "rwSample.out", "~/Documents", NULL};
+	printf("Calling: %s %s %s\n\n", argList[0], argList[1], argList[2]);
+	printf("Error %d", execv(argList[0], argList));
+}
+
+static void runStat(void) {
+	char* argList[3] = {"/usr/bin/stat", "~/Documents/", NULL};
+	printf("Calling: %s %s\n\n", argList[0], argList[1]);
+	printf("Error %d", execv(argList[0], argList));
 }
 
 static int install_syscall_filter(void) {
