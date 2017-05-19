@@ -10,7 +10,7 @@
 #include <unistd.h>
 
 char* USAGE="Usage: Don't use it";
-char* SERVER_VERSION="I don't even know";
+char* SERVER_VERSION="Beta v0.1";
 
 #define __DEBUG_OUTPUT__ stderr
 #define DEBUG(level, format, ...) if(opt_d >= level){ fprintf(__DEBUG_OUTPUT__, "[DEBUG%2d]", level); fprintf(__DEBUG_OUTPUT__, format, ## __VA_ARGS__); }

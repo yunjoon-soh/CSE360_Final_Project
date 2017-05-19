@@ -30,8 +30,7 @@ $(BIN)/%.o: $(SRC)/%.c
 	$(CC) $^ -o $@.out
 
 lib: $(BIN)/libex.o $(BIN)/net.o
-	gcc -fPIC -shared -ldl $^ -o $@.so 
-
+	gcc $^ -o $@.so -fPIC -shared -ldl -D_GNU_SOURCE -I$(HDR)
 buildNum:
 	$(SCRIPT)/buildN.sh
 
@@ -48,5 +47,5 @@ clean:
 	$(RM) -r ./*.out.dSYM
 	$(RM) core
 	$(RM) -r $(BIN)
-	$(RM) gridS gridD *.out
+	$(RM) gridS gridD gridDPseudo *.out
 	$(RM) *.so
