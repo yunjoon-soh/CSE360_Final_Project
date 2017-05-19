@@ -10,6 +10,6 @@
 
 
 int getAvailableFd(const char * path);
-int retrievePageOfFile(void* inner_addr, char** rBuf);
+int retrievePageOfFile(void* inner_addr, char* rBuf);
 
 #endif

@@ -1,7 +1,7 @@
 #include "gridDPseudo.h"
 
-
 #define SNOOPY_ADDR "127.0.0.1"
+
 /*Grid Donor*/
 int main(int argc, char** argv) {
 	char* end_ptr; // used for strtol
@@ -128,6 +128,7 @@ int main(int argc, char** argv) {
 		long params[3];
 		char sendbuf[PAGE_SIZE];
 		char rBuf[PAGE_SIZE];
+		char recvBuff[PAGE_SIZE];
 
 		int read_ret, write_ret, inner_fd;
 
@@ -155,7 +156,7 @@ int main(int argc, char** argv) {
 					strcat(sendbuf, peekData(params[0])); // peekData returns the content of the address location
 
 					// inform server that Snoopy program is opening a file
-					int res = fopenConnection(sendbuf, SNOOPY_ADDR);
+					int res = fopenConnection(sendbuf, SNOOPY_ADDR, recvBuff);
 
 					// if server was successful opening it sending back the file information
 					if(res){
@@ -168,7 +169,10 @@ int main(int argc, char** argv) {
 						inner_fd = getAvailableFd(peekData(params[0]));
 
 						// add to key-value structure, so that it can be referenced later
-						addKeyValuePair(inner_fd);
+						void* page = addKeyValuePair(inner_fd);
+
+						// save the page to malloc table
+						memcpy(page, recvBuff, PAGE_SIZE);
 
 					} else {
 						eax = ptrace(PTRACE_PEEKUSER, childPid, 4 * EAX, NULL);
@@ -248,7 +252,7 @@ int main(int argc, char** argv) {
 					strncat(sendbuf, peekData(params[0]), params[2]); // bug when params[2] > PAGE_SIZE - 6
 
 					// inform server what to write
-					write_ret = fopenConnection(sendbuf, SNOOPY_ADDR);
+					write_ret = fopenConnection(sendbuf, SNOOPY_ADDR, recvBuff);
 				}
 				else { /* Syscall exit */
 					eax = ptrace(PTRACE_PEEKUSER, childPid, 4 * EAX, NULL);
@@ -272,7 +276,7 @@ int main(int argc, char** argv) {
 					strcat(sendbuf, peekData(params[0]));
 
 					// request server to close
-					fopenConnection(sendbuf, SNOOPY_ADDR);
+					fopenConnection(sendbuf, SNOOPY_ADDR, recvBuff);
 
 					// clean up local paired memory
 					void* memFile = getMappedAddr(params[0]);

@@ -105,12 +105,12 @@ int main(int argc, char** argv) {
 			perror("setenv");
 
 		// install seccomp filter
-		 if (install_syscall_filter()){
-		 	DEBUG(1, "%s\n", "install_syscall_filter failed, aborting");
-		 	exit(EXIT_FAILURE);
-		 } else{
-		 	DEBUG(1, "%s\n", "install_syscall_filter success");
-		 }
+		 // if (install_syscall_filter()){
+		 // 	DEBUG(1, "%s\n", "install_syscall_filter failed, aborting");
+		 // 	exit(EXIT_FAILURE);
+		 // } else{
+		 // 	DEBUG(1, "%s\n", "install_syscall_filter success");
+		 // }
 
 		// When input data is passed on to execv()
 		// Trace for syscalls

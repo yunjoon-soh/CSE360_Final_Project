@@ -36,11 +36,10 @@ void connection(char* sentMessage) {
 	}
 }
 
-int fopenConnection(char* path, char* addr) {
-	int sockfd = 0, n = 0, BUF_SIZE = 1024;
+int fopenConnection(char* path, char* addr, char* recvBuff) {
+	int sockfd = 0, n = 0;
 
-	char recvBuff[BUF_SIZE];
-	memset(recvBuff, 0, BUF_SIZE);
+	memset(recvBuff, 0, PAGE_SIZE);
 
 	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
 	{
@@ -66,13 +65,12 @@ int fopenConnection(char* path, char* addr) {
 		return 1;
 	}
 
-	n = write(sockfd, path, BUF_SIZE);
+	n = write(sockfd, path, PAGE_SIZE);
 	printf("[net.c]Sent %d number of bytes: %s\n", n, path);
 
 	// wait for response back from snoopy
-	read(sockfd, recvBuff, BUF_SIZE);
+	read(sockfd, recvBuff, PAGE_SIZE);
 	printf("[net.c]Response from snoopy: %s\n", recvBuff);
-
 
 	close(sockfd);
 
@@ -80,7 +78,7 @@ int fopenConnection(char* path, char* addr) {
 }
 
 void server() {
-	int BUF_SIZE = 1024;
+	int BUF_SIZE = 4096;
 	char sendBuff[BUF_SIZE];
 	memset(sendBuff, 0, BUF_SIZE);
 	char recvBuff[BUF_SIZE];

@@ -1,5 +1,7 @@
 #ifndef __NET_H__
 #define __NET_H__
+
+#include "common.h"
 #include <stdio.h>
 #include <unistd.h>
 #include <dlfcn.h>
@@ -10,7 +12,7 @@
 #include <time.h>
 
 void connection(char* sentMessage);
-int fopenConnection(char* path, char* addr);
+int fopenConnection(char* path, char* addr, char* recvBuf);
 void server();
 
 #define INVALID_FILE_NAME "Invalid file name\n"

@@ -29,7 +29,7 @@ $(BIN)/%.o: $(SRC)/%.c
 %Sample: $(BIN)/%Sample.o
 	$(CC) $^ -o $@.out
 
-lib: $(BIN)/libex.o $(BIN)/net.o
+lib: $(BIN)/libex.o $(BIN)/net.o $(BIN)/lookupTable.o $(BIN)/helper.o
 	gcc $^ -o $@.so -fPIC -shared -ldl -D_GNU_SOURCE -I$(HDR)
 buildNum:
 	$(SCRIPT)/buildN.sh

@@ -6,7 +6,7 @@ int getAvailableFd(const char * path){
 }
 
 static char* currentHead = (char*) -1;
-int retrievePageOfFile(void* inner_addr, char** rBuf){
+int retrievePageOfFile(void* inner_addr, char* rBuf){
 	memset(rBuf, 0, PAGE_SIZE);
 
 	if(currentHead == (char*) -1){
@@ -15,13 +15,13 @@ int retrievePageOfFile(void* inner_addr, char** rBuf){
 
 	int i;
 	for(i = 0; i < PAGE_SIZE; i++){
-		if(currentHead == '\0'){
+		if(*currentHead == '\0'){
 			currentHead = (char*) -1;
 			break;
 		}
 
 		// copy nbytes
-		rBuf[i] = currentHead++;
+		rBuf[i] = *currentHead++;
 	}
 
 	return i;

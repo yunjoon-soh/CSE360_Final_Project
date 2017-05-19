@@ -22,5 +22,5 @@ lib: libex.c
 #	export LD_PRELOAD=`pwd`/lib.so
 
 clean:
-	rm -rf app *.o *.so
+	rm -rf app *.o *.so hello
 
