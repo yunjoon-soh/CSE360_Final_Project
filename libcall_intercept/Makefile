@@ -1,16 +1,19 @@
 CC=gcc
 CFLAGS=-Wall -Werror -I../grid/header
 
-all: lib app
+all: lib hello
 
 run: all
-	./app
+	export LD_PRELOAD=$(shell pwd)/lib.so
+	env | grep LD_PRELOAD
+	./hello
+	export LD_PRELOAD=
 
-app: hello.o
+hello: hello.o
 	gcc $^ -o $@
 
-lib: libex.c ../grid/bin/net.o
-	gcc $^ -o $@.so -fPIC -shared -ldl -D_GNU_SOURCE -I../grid/header
+lib: libex.c
+	gcc $^ -o $@.so -fPIC -shared -ldl -D_GNU_SOURCE -I../grid/include
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $<

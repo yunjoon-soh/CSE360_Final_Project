@@ -5,17 +5,23 @@
 #include <sys/wait.h>
 #include <sys/types.h>
 
+#ifndef HOOK_LIB_PATH
+# define HOOK_LIB_PATH "/home/sekar/CSE360_Final_Project/libcall_intercept/lib.so"
+#endif
+
 int main(int argc, char** argv, char** env)
 {
 	int pid = -1, status;
 	char* ldPath = "";
+
+//	setenv("LD_PRELOAD", HOOK_LIB_PATH, 1);
 
 	printf("This is parent:");
 	puts("Hello world!\n");
 
 	// parent
 	ldPath = getenv("LD_PRELOAD");
-	printf("[Parent]Path: %s\n", ldPath);
+	printf("[Parent]Path: %s\n\n", ldPath);
 
 	// This is to test if child will remain hooked even when changing the setenv
 	unsetenv("LD_PRELOAD");
