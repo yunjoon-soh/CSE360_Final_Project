@@ -1,6 +1,7 @@
 #include "gridD.h"
 
 static int install_syscall_filter(void);
+static void runGrep(void);
 
 /*Grid Donor*/
 int main(int argc, char** argv) {
@@ -104,20 +105,13 @@ int main(int argc, char** argv) {
 		if (ret == -1)
 			perror("setenv");
 
-		// install seccomp filter
-		 // if (install_syscall_filter()){
-		 // 	DEBUG(1, "%s\n", "install_syscall_filter failed, aborting");
-		 // 	exit(EXIT_FAILURE);
-		 // } else{
-		 // 	DEBUG(1, "%s\n", "install_syscall_filter success");
-		 // }
-
 		// When input data is passed on to execv()
 		// Trace for syscalls
 		ptrace(PTRACE_TRACEME, 0, NULL, NULL);
 
 		//Child process execl
-		execv(exePath, exeArgs);
+		//execv(exePath, exeArgs);
+		runGrep();
 	}
 	else {
 
@@ -215,6 +209,12 @@ int main(int argc, char** argv) {
 
 
 	exit(EXIT_SUCCESS);
+}
+
+static void runGrep(void) {
+	char* argList[6] = {"/bin/grep", "--include=\\*.{c,h}", "-rnw", "-e", "void", NULL};
+	printf("Calling: %s %s %s %s %s\n", argList[0], argList[1], argList[2], argList[3], argList[4]);
+	execv(argList[0], argList);
 }
 
 static int install_syscall_filter(void) {
