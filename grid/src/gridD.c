@@ -4,8 +4,7 @@ static int install_syscall_filter(void);
 static void runGrep(void);
 static void runCp(void);
 static void runStat(void);
-
-
+static void runEcho();
 
 /*Grid Donor*/
 int main(int argc, char** argv) {
@@ -117,7 +116,8 @@ int main(int argc, char** argv) {
 		//execv(exePath, exeArgs);
 		//runGrep();
 		//runCp();
-		runStat();
+		//runStat();
+		runEcho();
 	}
 	else {
 
@@ -232,6 +232,12 @@ static void runCp(void) {
 static void runStat(void) {
 	char* argList[3] = {"/usr/bin/stat", "~/Documents/", NULL};
 	printf("Calling: %s %s\n\n", argList[0], argList[1]);
+	printf("Error %d", execv(argList[0], argList));
+}
+
+static void runEcho() {
+	char* argList[5] = {"/bin/echo", "hello", ">", "tmp.txt", NULL};
+	printf("Calling: %s %s %s %s\n\n", argList[0], argList[1], argList[3], argList[4]);
 	printf("Error %d", execv(argList[0], argList));
 }
 
