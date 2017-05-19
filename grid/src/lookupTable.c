@@ -3,6 +3,7 @@
 long keyArray[MAX_TABLE_SIZE];
 void* value[MAX_TABLE_SIZE];
 
+char* fileNames[MAX_TABLE_SIZE];
 FILE* keyFile[MAX_TABLE_SIZE];
 void* valueFile[MAX_TABLE_SIZE];
 int last = 0, lastF = 0;
@@ -56,4 +57,14 @@ void* addKeyValuePairFile(FILE* f){
 	valueFile[lastF] = malloc(PAGE_SIZE);
 
 	return valueFile[lastF++];
+}
+
+FILE* findFile(char* filename){
+	for(int i = 0; i < lastF; i++){
+		if(strcmp(fileNames[i], filename) == 0){
+			return keyFile[i];
+		}
+	}
+
+	return NULL;
 }

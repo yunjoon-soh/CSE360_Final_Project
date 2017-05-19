@@ -38,6 +38,13 @@ FILE *fopen(const char *path, const char *mode) {
 	// create message to send
 	strncpy(&sendMessage[index], "fopen,", 6);
 	index += 6;
+	if(strstr(mode, "r") != NULL){
+		strncpy(&sendMessage[index], "read,", 5);
+		index += 5;
+	} else if(strstr(mode, "w") != NULL){
+		strncpy(&sendMessage[index], "write,", 6);
+		index += 6;
+	}
 	strncpy(&sendMessage[index], path, pathLen);
 	index += pathLen;
 	// printf("path: %s, pathLen:%d, mode: %s, modeLen:%d index:%d\n", path,pathLen, mode, modeLen, index);
@@ -45,7 +52,7 @@ FILE *fopen(const char *path, const char *mode) {
 
 	char recvBuff[PAGE_SIZE];
 	printf("[lib.so] Sending the current message: %s\n", sendMessage);
-	int res = fopenConnection(sendMessage, "127.0.0.1", recvBuff);
+	int res = fopenConnection(sendMessage, SNOOPY_ADDR, recvBuff);
 
 	// if server was successful opening it sending back the file information
 	if(!res){
@@ -136,6 +143,30 @@ size_t fread(void *ptr, size_t size, size_t nmemb, FILE *stream){
 }
 
 size_t fwrite(const void *ptr, size_t size, size_t nmemb, FILE *stream){
-	printf("[lib.so] Hooked fread\n");
-	return size * nmemb;
+	printf("[lib.so] Hooked fwrite\n");
+	int (*old_fwrite)(const void *ptr, size_t size, size_t nmemb, FILE *stream);
+
+	// save original fwrite
+	old_fwrite = dlsym(RTLD_NEXT, "fwrite");
+
+	if(stream == NULL){
+		return 0;
+	}
+
+	char sendbuf[PAGE_SIZE];
+	char recvBuff[PAGE_SIZE];
+
+	// concatenate strings for sendbuf
+	memset(sendbuf, 0, PAGE_SIZE);
+	strcat(sendbuf, "fwrite,");
+	strncat(sendbuf, ptr, size*nmemb); // bug when params[2] > PAGE_SIZE - 6
+
+	// inform server what to write
+	fopenConnection(sendbuf, SNOOPY_ADDR, recvBuff);
+
+	if(strcmp(recvBuff, "done")){
+		return size*nmemb;
+	}
+
+	return 0;
 }

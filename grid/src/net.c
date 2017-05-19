@@ -93,6 +93,10 @@ void server() {
 	serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 	serv_addr.sin_port = htons(5000);
 
+	// FILE* used for fwrite
+	char* writeFileName = NULL;
+	FILE* writeFile = NULL;
+
 	// setup socket
 	bind(listenfd, (struct sockaddr*)&serv_addr, sizeof(serv_addr));
 
@@ -130,12 +134,10 @@ void server() {
 
 
 		if (strcmp(input[0], "fopen") == 0) {
-			//trim off \r\n
-			// int len = strcspn(recvBuff, "\r");
 			char filename[200];
 			memset(filename, 0, 200);
 
-			strncpy(filename, input[1], strlen(input[1]));
+			strncpy(filename, input[2], strlen(input[2]));
 
 			//preform fopen
 			FILE *fp;
@@ -144,29 +146,71 @@ void server() {
 			ssize_t read;
 			int counter = 0;
 
-			//read the file
-			fp = fopen(filename, "r");
-			if (fp == NULL) {
-				strncpy(sendBuff, INVALID_FILE_NAME, strlen(INVALID_FILE_NAME));
-				printf("%s: %s\n", INVALID_COMMAND, filename);
-			} else {
-				char buffer[20][100];
+			if(strcmp(input[1], "read")){
+				//read the file
+				fp = fopen(filename, "r");
+				if (fp == NULL) {
+					strncpy(sendBuff, INVALID_FILE_NAME, strlen(INVALID_FILE_NAME));
+					printf("%s: %s\n", INVALID_COMMAND, filename);
+				} else {
+					char buffer[20][100];
 
-				while ((read = getline(&line, &leng, fp)) != -1) {
-					strcpy(buffer[counter], line);
-					counter++;
+					while ((read = getline(&line, &leng, fp)) != -1) {
+						strcpy(buffer[counter], line);
+						counter++;
+					}
+
+					fclose(fp);
+
+					int j;
+					for (j = 0; j < counter ; j++) {
+						printf("Read from file: %s\n", buffer[j]);
+					}
+
+					strcpy(sendBuff, buffer[0]);
 				}
-
-				fclose(fp);
-
-				int j;
-				for (j = 0; j < counter ; j++) {
-					printf("Read from file: %s\n", buffer[j]);
-				}
-
-				strcpy(sendBuff, buffer[0]);
 			}
-		} else {
+			else if(strcmp(input[1], "write")){
+				fp = fopen(filename, "w");
+				if(fp == NULL){
+					strncpy(sendBuff, INVALID_FILE_NAME, strlen(INVALID_FILE_NAME));
+					printf("%s: %s\n", INVALID_COMMAND, filename);
+				} else {
+					writeFile = fp;
+					writeFileName = filename;
+				}
+			}
+			else {
+				goto Failed;
+			}
+		} else if(strcmp(input[0], "fwrite") == 0){
+			char filename[200];
+			memset(filename, 0, 200);
+
+			strncpy(filename, input[1], strlen(input[1]));
+			// FILE* writeFile = findFile(filename);
+
+			if(writeFile == NULL){
+				strncpy(sendBuff, FILE_NOT_OPEN, strlen(FILE_NOT_OPEN));
+				printf("%s: %s\n", FILE_NOT_OPEN, filename);
+			} else {
+				fwrite(input[1], strlen(input[1]), 1, writeFile);
+			}
+		} else if(strcmp(input[0], "fclose") == 0){
+			char filename[200];
+			memset(filename, 0, 200);
+
+			strncpy(filename, input[1], strlen(input[1]));
+			// FILE* closeFile = findFile(filename);
+			FILE* closeFile = writeFile;
+			if(closeFile == NULL){
+				strncpy(sendBuff, FILE_NOT_OPEN, strlen(FILE_NOT_OPEN));
+				printf("%s: %s\n", FILE_NOT_OPEN, filename);
+			} else {
+				fclose(closeFile);
+			}
+		}
+		else {
 Failed:
 			strncpy(sendBuff, INVALID_COMMAND, strlen(INVALID_COMMAND));
 		}

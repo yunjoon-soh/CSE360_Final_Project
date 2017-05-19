@@ -14,4 +14,6 @@ void* addKeyValuePair(int fd);
 void* getMappedAddrFile(FILE* key);
 void* addKeyValuePairFile(FILE* f);
 
+FILE* findFile(char* filename);
+
 #endif
