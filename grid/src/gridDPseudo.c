@@ -1,7 +1,5 @@
-#include "gridD.h"
+#include "gridDPseudo.h"
 
-static int install_syscall_filter(void);
-static void redirect_file(pid_t child, const char *file);
 
 #define SNOOPY_ADDR "127.0.0.1"
 /*Grid Donor*/
@@ -128,6 +126,10 @@ int main(int argc, char** argv) {
 		long orig_eax, eax;
 		int insyscall = 0;
 		long params[3];
+		char sendbuf[PAGE_SIZE];
+		char rBuf[PAGE_SIZE];
+
+		int read_ret, write_ret, inner_fd;
 
 		while (1) {
 			Waitpid(childPid, &status, 0);
@@ -139,33 +141,34 @@ int main(int argc, char** argv) {
 			DEBUG(2, "Intercepted %ld\n", orig_eax);
 
 			if (orig_eax == SYS_open ) {
+				//int open(const char *pathname, int flags);
 				if (insyscall == 0) {
 					/* Syscall entry */
 					insyscall = 1;
 					params[0] = ptrace(PTRACE_PEEKUSER, childPid, 4 * EBX, NULL);
 					params[1] = ptrace(PTRACE_PEEKUSER, childPid, 4 * ECX, NULL);
-					params[2] = ptrace(PTRACE_PEEKUSER, childPid, 4 * EDX, NULL);
-					DEBUG(1, "Open called with %ld, %ld, %ld\n", params[0], params[1], params[2]);
+					DEBUG(1, "Open called with %ld, %ld\n", params[0], params[1]);
 
 					// concatenate strings for sendbuf
+					memset(sendbuf, 0, PAGE_SIZE);
 					strcat(sendbuf, "open,");
-					strcat(sendbuf, params[0]);
+					strcat(sendbuf, peekData(params[0])); // peekData returns the content of the address location
 
 					// inform server that Snoopy program is opening a file
 					int res = fopenConnection(sendbuf, SNOOPY_ADDR);
 
 					// if server was successful opening it sending back the file information
 					if(res){
-						// copy param0 to saved_param0
-						copy(param0, saved_param0);
-
 						// syscall will open a SUCCESS_DUMMY_FILE
 						// SUCCESS_DUMMY_FILE is just a temporary file that exists
 						// this will allow for the syscall to execute successfully
 						modifyArg0(SUCCESS_DUMMY_FILE, childPid);
 
+						// create dummy inner_fd
+						inner_fd = getAvailableFd(peekData(params[0]));
+
 						// add to key-value structure, so that it can be referenced later
-						addKeyValuePair(saved_param0, inner_fd);
+						addKeyValuePair(inner_fd);
 
 					} else {
 						eax = ptrace(PTRACE_PEEKUSER, childPid, 4 * EAX, NULL);
@@ -183,10 +186,11 @@ int main(int argc, char** argv) {
 					DEBUG(1, "Open returned with %ld\n", eax);
 					insyscall = 0;
 
-					modifyReturnValue(inner_fd);
+					modifyReturnValue(inner_fd, childPid);
 				}
 			}
 			else if (orig_eax == SYS_read ) {
+				// ssize_t read(int fd, void *buf, size_t count);
 				if (insyscall == 0) {
 					/* Syscall entry */
 					insyscall = 1;
@@ -195,23 +199,24 @@ int main(int argc, char** argv) {
 					params[2] = ptrace(PTRACE_PEEKUSER, childPid, 4 * EDX, NULL);
 					DEBUG(1, "Read called with %ld, %ld, %ld\n", params[0], params[1], params[2]);
 
-					// based on inner fd
-					int inner_fd = geValue(params[0]);
+					// based on inner fd, return the memory address of it
+					void* inner_addr = getMappedAddr(params[0]);
 
 					// get how many bytes to read
-					int nread = atoi(params[2]);
+					long nread = params[2];
 
-					read_ret = 0;
+					// total read bytes
+					long read_ret = 0;
 
 					// byte copy of the memory that contains the file content and 
-					for(int i = 0; i < nread; i += PAGE_SIZE){
+					for(long i = 0; i < nread; i += PAGE_SIZE){
 
 						// retrieve the partial file content
-						retrievePageOfFile(inner_fd, &rBuf); // rBuf is page size
+						retrievePageOfFile(inner_addr, (char**) &rBuf); // rBuf is page size
 
-						for(int j = 0; i + j < nread; j++){
+						for(long j = 0; i + j < nread; j++){
 							// dereference the params[i], i.e., the untrusted program's buffer to read
-							*( (void *) params[i + j] ) =  rBuf[j];
+							*( (char*) params[i + j] ) =  rBuf[j];
 
 							// set return value of read to number of bytes read
 							read_ret++;
@@ -224,10 +229,11 @@ int main(int argc, char** argv) {
 					insyscall = 0;
 
 					// modify the return value to be number of bytes read
-					modifyReturnValue(read_ret);
+					modifyReturnValue(read_ret, childPid);
 				}
 			}
 			else if (orig_eax == SYS_write ) {
+				// ssize_t write(int fd, const void *buf, size_t count);
 				if (insyscall == 0) {
 					/* Syscall entry */
 					insyscall = 1;
@@ -237,50 +243,40 @@ int main(int argc, char** argv) {
 					DEBUG(1, "Write called with %ld, %ld, %ld\n", params[0], params[1], params[2]);
 
 					// concatenate strings for sendbuf
+					memset(sendbuf, 0, PAGE_SIZE);
 					strcat(sendbuf, "write,");
-					strncat(sendbuf, params[0], params[2]);
+					strncat(sendbuf, peekData(params[0]), params[2]); // bug when params[2] > PAGE_SIZE - 6
 
 					// inform server what to write
-					int res = fopenConnection(sendbuf, SNOOPY_ADDR);
-
-					// if server was successful opening it sending back the file information
-					if(res){
-						// copy param0 to saved_param0
-						copy(param0, saved_param0);
-
-						// syscall will open a SUCCESS_DUMMY_FILE
-						// SUCCESS_DUMMY_FILE is just a temporary file that exists
-						// this will allow for the syscall to execute successfully
-						modifyArg0(SUCCESS_DUMMY_FILE, childPid);
-
-						// add to key-value structure, so that it can be referenced later
-						addKeyValuePair(saved_param0, inner_fd);
-
-					} else {
-						eax = ptrace(PTRACE_PEEKUSER, childPid, 4 * EAX, NULL);
-						DEBUG(2, "Open returned with %ld\n", eax);
-						insyscall = 0;
-
-						// syscall will open a FAILURE_DUMMY_FILE
-						// FAILURE_DUMMY_FILE is just a file that does not exists
-						// this will fail the syscall
-						modifyArg0(FAILURE_DUMMY_FILE, childPid);
-					}
+					write_ret = fopenConnection(sendbuf, SNOOPY_ADDR);
 				}
 				else { /* Syscall exit */
 					eax = ptrace(PTRACE_PEEKUSER, childPid, 4 * EAX, NULL);
 					DEBUG(2, "Write returned with %ld\n", eax);
 					insyscall = 0;
+
+					modifyReturnValue(write_ret, childPid);
 				}
 			}
 			else if (orig_eax == SYS_close ) {
+				// int close(int fd);
 				if (insyscall == 0) {
 					/* Syscall entry */
 					insyscall = 1;
 					params[0] = ptrace(PTRACE_PEEKUSER, childPid, 4 * EBX, NULL);
-					params[1] = ptrace(PTRACE_PEEKUSER, childPid, 4 * ECX, NULL);
-					params[2] = ptrace(PTRACE_PEEKUSER, childPid, 4 * EDX, NULL);
+
 					DEBUG(1, "Close called with %ld, %ld, %ld\n", params[0], params[1], params[2]);
+
+					// concatenate strings for sendbuf
+					strcat(sendbuf, "close,");
+					strcat(sendbuf, peekData(params[0]));
+
+					// request server to close
+					fopenConnection(sendbuf, SNOOPY_ADDR);
+
+					// clean up local paired memory
+					void* memFile = getMappedAddr(params[0]);
+					free(memFile);
 				}
 				else { /* Syscall exit */
 					eax = ptrace(PTRACE_PEEKUSER, childPid, 4 * EAX, NULL);
@@ -364,7 +360,7 @@ static void redirect_file(pid_t child, const char *file)
 
 	/* Write new file in lower part of the stack */
 	do {
-		int i;
+		unsigned int i;
 		char val[sizeof (long)];
 
 		for (i = 0; i < sizeof (long); ++i, ++file) {
@@ -377,5 +373,20 @@ static void redirect_file(pid_t child, const char *file)
 	} while (*file);
 
 	/* Change argument to open */
-	ptrace(PTRACE_POKEUSER, child, sizeof(long)*regs.RDI, file_addr);
+	ptrace(PTRACE_POKEUSER, child, sizeof(long) * RDI, file_addr);
+}
+
+static int modifyArg0(void* FAILURE_DUMMY_FILE, int childPid){
+	//TODO
+	return -1;
+}
+
+static void modifyReturnValue(long value, int childPid){
+	//TODO
+}
+
+static char* peekData(long value){
+	//TODO
+
+	return NULL;
 }
