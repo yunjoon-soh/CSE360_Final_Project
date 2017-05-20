@@ -113,11 +113,11 @@ int main(int argc, char** argv) {
 		ptrace(PTRACE_TRACEME, 0, NULL, NULL);
 
 		//Child process execl
-		//execv(exePath, exeArgs);
+		execv(exePath, exeArgs);
 		//runGrep();
 		//runCp();
 		//runStat();
-		runEcho();
+		//runEcho();
 	}
 	else {
 
